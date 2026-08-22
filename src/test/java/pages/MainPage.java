@@ -1,5 +1,6 @@
 package pages;
 
+import com.codeborne.selenide.ClickOptions;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
@@ -11,6 +12,7 @@ import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.*;
 import static com.codeborne.selenide.WebDriverConditions.title;
 import static com.codeborne.selenide.WebDriverConditions.urlContaining;
+import static helpers.Popups.closeBrowserWarning;
 
 public class MainPage {
     private final SelenideElement searchInput = $("#smart-title-search-input");
@@ -23,6 +25,7 @@ public class MainPage {
     @Step("Открыть главную страницу")
     public MainPage openPage() {
         open("");
+        closeBrowserWarning();
         return this;
     }
 
@@ -34,7 +37,11 @@ public class MainPage {
 
     @Step("Кликнуть пункт {itemName} в меню {menuName}")
     public MainPage clickDropdownItem(String menuName, String itemName) {
-        dropdownLinks(menuName).findBy(text(itemName)).shouldBe(visible).click();
+        hoverMenu(menuName);
+        dropdownLinks(menuName)
+                .findBy(text(itemName))
+                .shouldBe(visible)
+                .click(ClickOptions.usingJavaScript());
         return this;
     }
 

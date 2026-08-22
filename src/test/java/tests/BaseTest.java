@@ -7,6 +7,9 @@ import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.openqa.selenium.MutableCapabilities;
+import org.openqa.selenium.PageLoadStrategy;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import pages.MainPage;
 
@@ -26,19 +29,17 @@ public class BaseTest {
 
     @BeforeAll
     static void setupConfig() {
-        Configuration.browser = System.getProperty("browser", "chrome");
-        Configuration.browserVersion = System.getProperty("browserVersion", "128.0");
-        Configuration.headless = Boolean.parseBoolean(System.getProperty("headless", "true"));
+        Configuration.browser = System.getProperty("browser", "chrome").toLowerCase();
         Configuration.browserSize = System.getProperty("browserSize", "1920x1080");
         Configuration.baseUrl = System.getProperty("baseUrl", "https://sudar.su");
         Configuration.timeout = 15000;
         Configuration.pageLoadTimeout = 60000;
+        Configuration.pageLoadStrategy = "eager";
 
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability("selenoid:options", Map.<String, Object>of(
-                "enableVNC", true,
-                "enableVideo", true));
-        Configuration.browserCapabilities = capabilities;
+        String browserVersion = System.getProperty("browserVersion");
+        if (browserVersion != null && !browserVersion.isBlank()) {
+            Configuration.browserVersion = browserVersion;
+        }
 
         String remoteUrl = System.getProperty("remoteUrl");
         if (remoteUrl == null || remoteUrl.isBlank()) {
@@ -49,18 +50,49 @@ public class BaseTest {
                         System.getProperty("remoteBrowserUrl", "selenoid.autotests.cloud/wd/hub");
             }
         }
-        if (remoteUrl != null && !remoteUrl.isBlank()) {
+
+        boolean remote = remoteUrl != null && !remoteUrl.isBlank();
+        Configuration.headless = !remote && Boolean.parseBoolean(System.getProperty("headless", "false"));
+
+        if (remote) {
             Configuration.remote = remoteUrl;
+            Configuration.browserCapabilities = selenoidCapabilities();
         }
+    }
+
+    private static MutableCapabilities selenoidCapabilities() {
+        Map<String, Object> selenoidOptions = Map.of(
+                "enableVNC", true,
+                "enableVideo", true
+        );
+        if ("chrome".equalsIgnoreCase(Configuration.browser)) {
+            ChromeOptions options = new ChromeOptions();
+            options.setAcceptInsecureCerts(true);
+            options.setPageLoadStrategy(PageLoadStrategy.EAGER);
+            options.addArguments("--no-sandbox", "--disable-dev-shm-usage");
+            options.setCapability("selenoid:options", selenoidOptions);
+            return options;
+        }
+        DesiredCapabilities capabilities = new DesiredCapabilities();
+        capabilities.setCapability("pageLoadStrategy", "eager");
+        capabilities.setCapability("selenoid:options", selenoidOptions);
+        return capabilities;
     }
 
     @AfterEach
     void addAttachments() {
-        if (hasWebDriverStarted()) {
+        if (!hasWebDriverStarted()) {
+            return;
+        }
+        try {
             Attach.screenshotAs("Last screenshot");
             Attach.pageSource();
             Attach.browserConsoleLogs();
-            Attach.addVideo();
+            if (Configuration.remote != null) {
+                Attach.addVideo();
+            }
+        } catch (Exception ignored) {
+        } finally {
             closeWebDriver();
         }
     }

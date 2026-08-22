@@ -71,7 +71,8 @@ clean test
 -Dheadless=$HEADLESS
 ```
 
-Флаг `-DremoteUrl` передаётся в `Configuration.remote`, поэтому при запуске из Jenkins тесты идут в Selenoid, а не в локальный браузер.
+Флаг `-DremoteUrl` передаётся в `Configuration.remote`, поэтому при запуске из Jenkins тесты идут в Selenoid.  
+На Selenoid `headless` принудительно выключается: в контейнере Chrome с `--headless` часто падает с `WebDriverException`.
 
 <a id="сборка-в-jenkins"></a>
 
@@ -103,7 +104,7 @@ clean test
 Сценарий `shouldShowEmptyCartTest`: открытие главной → переход в корзину из шапки → проверка текста пустой корзины.
 
 <p align="center">
-  <img title="Empty cart test" src="media/video/empty-cart-test.gif" width="90%" alt="Прохождение теста пустой корзины">
+  <img title="Empty cart test" src="media/screens/video.gif" width="90%" alt="Прохождение теста пустой корзины">
 </p>
 
 При запуске в Selenoid видео каждого теста также прикладывается к Allure-отчёту (`enableVideo` + `Attach.addVideo()`).
@@ -114,10 +115,10 @@ clean test
 
 На *Dashboard* в <code>Allure TestOps</code> видна статистика количества тестов: сколько из них добавлены и проходятся вручную, сколько автоматизированы. Новые тесты, а так же результаты прогона приходят по интеграции при каждом запуске сборки.
 
-Чтобы запускать тесты **из Allure TestOps** (кнопка Run у кейса или Launch), нужна двусторонняя интеграция с Jenkins:
+Чтобы запускать тесты **из Allure TestOps** (кнопка Run у кейса или Launch):
 
-1. В Jenkins установлен [Allure TestOps plugin](https://docs.qameta.io/reference/integrations/ci-systems/jenkins/), в *Manage Jenkins → System* указан сервер Allure. `serverId` в `Jenkinsfile` должен совпадать с ID этого сервера.
-2. Job [`41-DEMAZAY-Diplom_UI`](https://jenkins.qa.guru/job/41-DEMAZAY-Diplom_UI/) — Pipeline from SCM по `Jenkinsfile` (шаг `withAllureUpload` грузит `build/allure-results` в проект `5345`). Если job остаётся Freestyle, добавьте wrapper **Allure: upload results** с тем же путём и project id.
+1. В Jenkins установлен Allure TestOps plugin, в *Manage Jenkins → System* указан сервер Allure.
+2. В job [`41-DEMAZAY-Diplom_UI`](https://jenkins.qa.guru/job/41-DEMAZAY-Diplom_UI/) включён upload результатов из `build/allure-results` в проект `5345`.
 3. В Allure TestOps: *Project → Settings → Integrations → Jenkins* — добавить этот job и включить **Job can be used to run tests**.
 
 После этого в Test cases / Launches появляется запуск выбранных автотестов, а результаты прогона сразу видны в TestOps.

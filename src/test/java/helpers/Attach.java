@@ -1,5 +1,6 @@
 package helpers;
 
+import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
 import io.qameta.allure.Attachment;
 import org.openqa.selenium.OutputType;
@@ -49,7 +50,20 @@ public class Attach {
     }
 
     private static URL getVideoUrl() {
-        String videoHost = System.getProperty("videoUrl", "https://selenoid.autotests.cloud/video/");
+        String videoHost = System.getProperty("videoUrl");
+        if (videoHost == null || videoHost.isBlank()) {
+            String remote = Configuration.remote;
+            if (remote != null && remote.contains("/wd/hub")) {
+                videoHost = remote
+                        .replaceFirst("^https://[^@]*@", "https://")
+                        .replace("/wd/hub", "/video/");
+            } else {
+                videoHost = "https://selenoid.qa.guru/video/";
+            }
+        }
+        if (!videoHost.endsWith("/")) {
+            videoHost += "/";
+        }
         String videoUrl = videoHost + sessionId() + ".mp4";
         try {
             return new URL(videoUrl);

@@ -7,6 +7,7 @@ import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.open;
+import static helpers.Popups.closeBrowserWarning;
 
 public class ProductPage {
     private final SelenideElement productName = $("h1");
@@ -15,6 +16,7 @@ public class ProductPage {
     @Step("Открыть карточку товара {name}")
     public ProductPage openPage(String path, String name) {
         open(path);
+        closeBrowserWarning();
         return this;
     }
 
