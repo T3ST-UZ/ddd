@@ -71,9 +71,6 @@ clean test
 -Dheadless=$HEADLESS
 ```
 
-Флаг `-DremoteUrl` передаётся в `Configuration.remote`, поэтому при запуске из Jenkins тесты идут в Selenoid.  
-На Selenoid `headless` принудительно выключается: в контейнере Chrome с `--headless` часто падает с `WebDriverException`.
-
 <a id="сборка-в-jenkins"></a>
 
 ## <img width="4%" style="vertical-align:middle" title="Jenkins" src="media/logo/Jenkins.svg"> [Сборка в Jenkins](https://jenkins.qa.guru/job/41-DEMAZAY-Diplom_UI/)
@@ -82,8 +79,6 @@ clean test
 <p align="center">
 <img title="Jenkins Build" src="media/screens/jenkins.png">
 </p>
-После выполнения сборки, в блоке <code>История сборок</code> напротив номера сборки появятся значки <code>Allure Report</code> и <code>Allure TestOps</code>, при клике на которые откроется страница с сформированным html-отчетом и тестовой документацией соответственно.
-
 <a id="пример-allure-отчета"></a>
 
 ## <img width="4%" style="vertical-align:middle" title="Allure Report" src="media/logo/Allure_Report.svg"> [Пример Allure-отчета](https://jenkins.qa.guru/job/41-DEMAZAY-Diplom_UI/3/allure/#)
@@ -94,20 +89,15 @@ clean test
 <img title="Allure Overview" src="media/screens/allure.png">
 </p>
 
-В отчёте тесты сгруппированы по `@Epic` / `@Feature` / `@Story`.  
-У каждого сценария есть `@DisplayName`, `@Owner` и `@Severity`.
-
 <a id="видео-прохождения-теста"></a>
 
 ## :film_projector: Видео прохождения теста
 
-Сценарий `shouldShowEmptyCartTest`: открытие главной → переход в корзину из шапки → проверка текста пустой корзины.
 
 <p align="center">
   <img title="Empty cart test" src="media/screens/video.gif" width="90%" alt="Прохождение теста пустой корзины">
 </p>
 
-При запуске в Selenoid видео каждого теста также прикладывается к Allure-отчёту (`enableVideo` + `Attach.addVideo()`).
 
 <a id="интеграция-с-allure-testops"></a>
 
@@ -115,13 +105,6 @@ clean test
 
 На *Dashboard* в <code>Allure TestOps</code> видна статистика количества тестов: сколько из них добавлены и проходятся вручную, сколько автоматизированы. Новые тесты, а так же результаты прогона приходят по интеграции при каждом запуске сборки.
 
-Чтобы запускать тесты **из Allure TestOps** (кнопка Run у кейса или Launch):
-
-1. В Jenkins установлен Allure TestOps plugin, в *Manage Jenkins → System* указан сервер Allure.
-2. В job [`41-DEMAZAY-Diplom_UI`](https://jenkins.qa.guru/job/41-DEMAZAY-Diplom_UI/) включён upload результатов из `build/allure-results` в проект `5345`.
-3. В Allure TestOps: *Project → Settings → Integrations → Jenkins* — добавить этот job и включить **Job can be used to run tests**.
-
-После этого в Test cases / Launches появляется запуск выбранных автотестов, а результаты прогона сразу видны в TestOps.
 
 <p align="center">
 <img title="Allure TestOps DashBoard" src="media/screens/AllureTestOps.png">
